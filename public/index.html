@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Startup Idea Validator - Validate Your Business Idea</title>
+    <link rel="stylesheet" href="styles.css?v=3.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar">
+      <div class="container">
+        <div class="nav-brand">
+          <i class="fas fa-lightbulb"></i>
+          <span>AI Idea Validator</span>
+        </div>
+        <ul class="nav-menu">
+          <li><a href="#home" class="nav-link active">Home</a></li>
+          <li><a href="#features" class="nav-link">Features</a></li>
+          <li><a href="#validator" class="nav-link">Validate</a></li>
+          <li><a href="#dashboard" class="nav-link">Dashboard</a></li>
+          <li><a href="#about" class="nav-link">About</a></li>
+        </ul>
+        <div class="auth-buttons" id="auth-section">
+          <button class="btn-login" id="google-signin-btn" style="background-color: #4285F4; color: white; display: flex; align-items: center; gap: 8px;">
+            <i class="fab fa-google"></i> Sign in with Google
+          </button>
+          <div id="user-info" style="display: none; align-items: center; gap: 10px;">
+             <img id="user-photo" src="" alt="Profile" style="width: 32px; height: 32px; border-radius: 50%;">
+             <button id="signout-btn" class="btn-signup" style="padding: 0.5rem 1rem;">Sign Out</button>
+          </div>
+        </div>
+        <div class="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+      <div class="container">
+        <div class="hero-content">
+          <h1 class="hero-title">Validate Your Startup Idea with AI</h1>
+          <p class="hero-subtitle">
+            Get instant, data-driven insights about your startup idea's
+            potential, market viability, and success probability using advanced
+            AI analysis.
+          </p>
+          <div class="hero-buttons">
+            <button class="btn-primary" onclick="scrollToValidator()">
+              <i class="fas fa-rocket"></i> Validate Now
+            </button>
+            <button class="btn-secondary" onclick="scrollToFeatures()">
+              <i class="fas fa-info-circle"></i> Learn More
+            </button>
+          </div>
+        </div>
+        <div class="hero-image">
+          <div class="floating-card">
+            <i class="fas fa-chart-line"></i>
+            <h3>Market Analysis</h3>
+          </div>
+          <div class="floating-card">
+            <i class="fas fa-users"></i>
+            <h3>Target Audience</h3>
+          </div>
+          <div class="floating-card">
+            <i class="fas fa-dollar-sign"></i>
+            <h3>Revenue Potential</h3>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+      <div class="container">
+        <h2 class="section-title">Why Choose Our Validator?</h2>
+        <p class="section-subtitle">
+          Comprehensive AI-powered analysis for your startup ideas
+        </p>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-brain"></i>
+            </div>
+            <h3>AI-Powered Analysis</h3>
+            <p>
+              Advanced machine learning algorithms analyze your idea against
+              thousands of successful startups
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-chart-bar"></i>
+            </div>
+            <h3>Market Research</h3>
+            <p>
+              Instant market size estimation, competitor analysis, and industry
+              trends
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-bullseye"></i>
+            </div>
+            <h3>Viability Score</h3>
+            <p>
+              Get a comprehensive score based on feasibility, uniqueness, and
+              market demand
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-money-bill-trend-up"></i>
+            </div>
+            <h3>Revenue Projections</h3>
+            <p>
+              Data-driven revenue estimates and monetization strategy
+              suggestions
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-user-check"></i>
+            </div>
+            <h3>Target Audience</h3>
+            <p>Identify and understand your ideal customer segments</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3>Risk Assessment</h3>
+            <p>Identify potential risks and challenges before you invest</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Validator Section -->
+    <section id="validator" class="validator">
+      <div class="container">
+        <h2 class="section-title">Validate Your Idea</h2>
+        <p class="section-subtitle">
+          Fill in the details and get instant AI-powered insights
+        </p>
+
+        <div class="validator-container">
+          <form id="validatorForm" class="validator-form">
+            <div class="form-group">
+              <label for="ideaName">Startup Idea Name *</label>
+              <input
+                type="text"
+                id="ideaName"
+                placeholder="e.g., AI-powered fitness coach"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="ideaDescription">Detailed Description *</label>
+              <textarea
+                id="ideaDescription"
+                rows="5"
+                placeholder="Describe your startup idea in detail. What problem does it solve? How does it work?"
+                required
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="industry">Industry *</label>
+                <select id="industry" required>
+                  <option value="">Select Industry</option>
+                  <option value="technology">Technology</option>
+                  <option value="healthcare">Healthcare</option>
+                  <option value="finance">Finance</option>
+                  <option value="education">Education</option>
+                  <option value="ecommerce">E-commerce</option>
+                  <option value="saas">SaaS</option>
+                  <option value="marketplace">Marketplace</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="targetMarket">Target Market *</label>
+                <select id="targetMarket" required>
+                  <option value="">Select Market</option>
+                  <option value="b2b">B2B (Business to Business)</option>
+                  <option value="b2c">B2C (Business to Consumer)</option>
+                  <option value="b2b2c">B2B2C (Both)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="targetAudience">Target Audience *</label>
+              <input
+                type="text"
+                id="targetAudience"
+                placeholder="e.g., Fitness enthusiasts aged 25-40"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="problemSolved">Problem Being Solved *</label>
+              <textarea
+                id="problemSolved"
+                rows="3"
+                placeholder="What specific problem does your startup solve?"
+                required
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="uniqueValue">Unique Value Proposition</label>
+              <textarea
+                id="uniqueValue"
+                rows="3"
+                placeholder="What makes your solution unique compared to existing alternatives?"
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="estimatedBudget">Estimated Initial Budget</label>
+                <select id="estimatedBudget">
+                  <option value="">Select Budget Range</option>
+                  <option value="0-10k">$0 - $10,000</option>
+                  <option value="10k-50k">$10,000 - $50,000</option>
+                  <option value="50k-100k">$50,000 - $100,000</option>
+                  <option value="100k-500k">$100,000 - $500,000</option>
+                  <option value="500k+">$500,000+</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="timeframe">Expected Launch Timeframe</label>
+                <select id="timeframe">
+                  <option value="">Select Timeframe</option>
+                  <option value="1-3months">1-3 months</option>
+                  <option value="3-6months">3-6 months</option>
+                  <option value="6-12months">6-12 months</option>
+                  <option value="12months+">12+ months</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="competitors">Known Competitors (optional)</label>
+              <input
+                type="text"
+                id="competitors"
+                placeholder="e.g., Company A, Company B"
+              />
+            </div>
+
+            <button type="submit" class="btn-validate">
+              <i class="fas fa-magic"></i> Validate My Idea
+            </button>
+          </form>
+
+          <!-- Loading State -->
+          <div id="loadingState" class="loading-state" style="display: none">
+            <div class="loader"></div>
+            <p>Analyzing your startup idea...</p>
+            <small>This may take a few seconds</small>
+          </div>
+
+          <!-- Results -->
+          <div
+            id="resultsContainer"
+            class="results-container"
+            style="display: none"
+          >
+            <div class="results-header">
+              <h3>Validation Results</h3>
+              <button class="btn-new-validation" onclick="resetForm()">
+                <i class="fas fa-plus"></i> New Validation
+              </button>
+            </div>
+
+            <div class="overall-score">
+              <div class="score-circle" id="overallScoreCircle">
+                <span class="score-value" id="overallScore">0</span>
+                <span class="score-label">/ 100</span>
+              </div>
+              <div class="score-description">
+                <h4 id="scoreTitle">Overall Viability Score</h4>
+                <p id="scoreDescription">Analysis complete</p>
+              </div>
+            </div>
+
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-header">
+                  <i class="fas fa-rocket"></i>
+                  <h4>Market Potential</h4>
+                </div>
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    id="marketPotentialBar"
+                    style="width: 0%"
+                  ></div>
+                </div>
+                <div class="metric-score" id="marketPotentialScore">0/100</div>
+                <p class="metric-description" id="marketPotentialDesc"></p>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-header">
+                  <i class="fas fa-star"></i>
+                  <h4>Uniqueness</h4>
+                </div>
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    id="uniquenessBar"
+                    style="width: 0%"
+                  ></div>
+                </div>
+                <div class="metric-score" id="uniquenessScore">0/100</div>
+                <p class="metric-description" id="uniquenessDesc"></p>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-header">
+                  <i class="fas fa-check-circle"></i>
+                  <h4>Feasibility</h4>
+                </div>
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    id="feasibilityBar"
+                    style="width: 0%"
+                  ></div>
+                </div>
+                <div class="metric-score" id="feasibilityScore">0/100</div>
+                <p class="metric-description" id="feasibilityDesc"></p>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-header">
+                  <i class="fas fa-dollar-sign"></i>
+                  <h4>Revenue Potential</h4>
+                </div>
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    id="revenueBar"
+                    style="width: 0%"
+                  ></div>
+                </div>
+                <div class="metric-score" id="revenueScore">0/100</div>
+                <p class="metric-description" id="revenueDesc"></p>
+              </div>
+            </div>
+
+            <div class="detailed-analysis">
+              <div class="analysis-section">
+                <h4><i class="fas fa-lightbulb"></i> Key Insights</h4>
+                <ul id="keyInsights"></ul>
+              </div>
+
+              <div class="analysis-section">
+                <h4><i class="fas fa-users"></i> Target Audience Analysis</h4>
+                <p id="audienceAnalysis"></p>
+              </div>
+
+              <div class="analysis-section">
+                <h4>
+                  <i class="fas fa-exclamation-triangle"></i> Potential
+                  Challenges
+                </h4>
+                <ul id="challenges"></ul>
+              </div>
+
+            <div class="analysis-section">
+                <h4><i class="fas fa-arrow-up"></i> Recommendations</h4>
+                <ul id="recommendations"></ul>
+              </div>
+
+              <!-- Added ML Predictions Section -->
+              <div id="mlPredictionsSection" class="analysis-section" style="display: none">
+                <h4><i class="fas fa-robot"></i> AI Predictions</h4>
+                <div id="mlPredictions"></div>
+              </div>
+
+              <!-- Added AI Tech Section -->
+              <div id="aiTechSection" class="analysis-section" style="display: none">
+                <h4><i class="fas fa-microchip"></i> AI Technologies Used</h4>
+                <div id="aiTechnologies"></div>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button class="btn-download" onclick="downloadReport()">
+                <i class="fas fa-download"></i> Download Report
+              </button>
+              <button class="btn-save" onclick="saveValidation()">
+                <i class="fas fa-save"></i> Save to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section id="dashboard" class="dashboard" style="display: none">
+      <div class="container">
+        <h2 class="section-title">Your Validations Dashboard</h2>
+        <div class="dashboard-stats">
+          <div class="stat-card">
+            <i class="fas fa-lightbulb"></i>
+            <h3 id="totalIdeas">0</h3>
+            <p>Total Ideas</p>
+          </div>
+          <div class="stat-card">
+            <i class="fas fa-chart-line"></i>
+            <h3 id="avgScore">0</h3>
+            <p>Average Score</p>
+          </div>
+          <div class="stat-card">
+            <i class="fas fa-trophy"></i>
+            <h3 id="topScore">0</h3>
+            <p>Top Score</p>
+          </div>
+        </div>
+        <div id="savedValidations" class="saved-validations"></div>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+      <div class="container">
+        <h2 class="section-title">About Our Platform</h2>
+        <div class="about-content">
+          <div class="about-text">
+            <h3>Empowering Entrepreneurs with AI</h3>
+            <p>
+              Our AI-Based Startup Idea Validator uses advanced machine learning
+              algorithms and market data analysis to provide entrepreneurs with
+              instant, actionable insights about their business ideas.
+            </p>
+            <p>
+              We analyze over 50+ factors including market trends, competition,
+              feasibility, target audience fit, and revenue potential to give
+              you a comprehensive validation report.
+            </p>
+            <div class="stats">
+              <div class="stat">
+                <h4>10,000+</h4>
+                <p>Ideas Validated</p>
+              </div>
+              <div class="stat">
+                <h4>95%</h4>
+                <p>Accuracy Rate</p>
+              </div>
+              <div class="stat">
+                <h4>5,000+</h4>
+                <p>Happy Users</p>
+              </div>
+            </div>
+          </div>
+          <div class="about-image">
+            <div class="tech-stack">
+              <h4>Powered By</h4>
+              <div class="tech-icons">
+                <span><i class="fas fa-brain"></i> AI/ML</span>
+                <span><i class="fas fa-database"></i> Big Data</span>
+                <span><i class="fas fa-chart-line"></i> Analytics</span>
+                <span><i class="fas fa-cloud"></i> Cloud</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3><i class="fas fa-lightbulb"></i> AI Idea Validator</h3>
+            <p>
+              Validate your startup ideas with confidence using AI-powered
+              insights.
+            </p>
+          </div>
+          <div class="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+              <li><a href="#home">Home</a></li>
+              <li><a href="#features">Features</a></li>
+              <li><a href="#validator">Validate</a></li>
+              <li><a href="#about">About</a></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h4>Contact</h4>
+            <ul>
+              <li><i class="fas fa-envelope"></i> info@aivalidator.com</li>
+              <li><i class="fas fa-phone"></i> +1 (555) 123-4567</li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h4>Follow Us</h4>
+            <div class="social-links">
+              <a href="#"><i class="fab fa-twitter"></i></a>
+              <a href="#"><i class="fab fa-linkedin"></i></a>
+              <a href="#"><i class="fab fa-facebook"></i></a>
+              <a href="#"><i class="fab fa-github"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2026 AI Startup Idea Validator. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('loginModal')">&times;</span>
+        <h2>Login</h2>
+        <form id="loginForm">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" required />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" required />
+          </div>
+          <button type="submit" class="btn-primary">Login</button>
+          <p class="modal-footer-text">
+            Don't have an account?
+            <a href="#" onclick="switchModal('loginModal', 'signupModal')"
+              >Sign up</a
+            >
+          </p>
+        </form>
+      </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div id="signupModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('signupModal')">&times;</span>
+        <h2>Sign Up</h2>
+        <form id="signupForm">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" required />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" required />
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" required />
+          </div>
+          <button type="submit" class="btn-primary">Sign Up</button>
+          <p class="modal-footer-text">
+            Already have an account?
+            <a href="#" onclick="switchModal('signupModal', 'loginModal')"
+              >Login</a
+            >
+          </p>
+        </form>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
