@@ -222,74 +222,75 @@ async function performEnhancedAnalysis(data) {
 }
 
 function performAlgorithmicAnalysis(data) {
-  // Scoring factors
+  // Scoring factors - REDUCED BASELINES for more realistic scoring
   const industryScores = {
-    technology: 85,
-    healthcare: 80,
-    finance: 75,
-    education: 78,
-    ecommerce: 82,
-    saas: 88,
-    marketplace: 80,
-    other: 70,
+    technology: 75,
+    healthcare: 70,
+    finance: 65,
+    education: 60,
+    ecommerce: 65,
+    saas: 78,
+    marketplace: 60,
+    other: 50,
   };
 
   const marketScores = {
-    b2b: 80,
-    b2c: 75,
-    b2b2c: 85,
+    b2b: 65,
+    b2c: 55, // Harder to succeed in B2C
+    b2b2c: 70,
   };
 
   const budgetScores = {
-    "0-10k": 60,
-    "10k-50k": 75,
-    "50k-100k": 85,
-    "100k-500k": 90,
-    "500k+": 95,
-    "": 70,
+    "0-10k": 40, // Very hard with low budget
+    "10k-50k": 60,
+    "50k-100k": 75,
+    "100k-500k": 85,
+    "500k+": 90,
+    "": 50,
   };
 
   const timeframeScores = {
-    "1-3months": 85,
-    "3-6months": 90,
-    "6-12months": 88,
-    "12months+": 75,
-    "": 80,
+    "1-3months": 60, // Rushed
+    "3-6months": 80, // Good pace
+    "6-12months": 75,
+    "12months+": 60, // Too slow?
+    "": 60,
   };
 
   // Calculate individual scores
-  const baseIndustryScore = industryScores[data.industry] || 70;
-  const baseMarketScore = marketScores[data.targetMarket] || 75;
-  const baseBudgetScore = budgetScores[data.estimatedBudget] || 70;
-  const baseTimeScore = timeframeScores[data.timeframe] || 80;
+  const baseIndustryScore = industryScores[data.industry] || 50;
+  const baseMarketScore = marketScores[data.targetMarket] || 60;
+  const baseBudgetScore = budgetScores[data.estimatedBudget] || 50;
+  const baseTimeScore = timeframeScores[data.timeframe] || 60;
 
-  // Analyze description quality
+  // Analyze description quality - STRICTER PENALTY
   const descriptionLength = data.ideaDescription.length;
-  const descriptionQuality = Math.min(100, (descriptionLength / 300) * 100);
-
+  // Needs at least 150 chars for distinct score, otherwise heavily penalized
+  const descriptionQuality = Math.min(100, (descriptionLength / 500) * 100);
+  
   // Has unique value proposition
   const hasUniqueValue = data.uniqueValue && data.uniqueValue.length > 50;
-  const uniquenessBonus = hasUniqueValue ? 15 : 0;
+  const uniquenessBonus = hasUniqueValue ? 20 : 0;
 
   // Has competitor research
   const hasCompetitors = data.competitors && data.competitors.length > 0;
-  const competitorBonus = hasCompetitors ? 10 : 0;
+  const competitorBonus = hasCompetitors ? 15 : 0;
 
   // Calculate scores with some randomization for realism
-  const randomVariance = () => Math.floor(Math.random() * 10) - 5;
+  const randomVariance = () => Math.floor(Math.random() * 15) - 7;
 
   const marketPotentialScore = Math.min(
     100,
-    Math.max(0, baseIndustryScore + descriptionQuality * 0.2 + randomVariance())
+    Math.max(0, baseIndustryScore * 0.7 + descriptionQuality * 0.3 + randomVariance())
   );
 
   const uniquenessScore = Math.min(
     100,
     Math.max(
       0,
-      baseMarketScore +
+      baseMarketScore * 0.5 +
         uniquenessBonus +
-        descriptionQuality * 0.15 +
+        descriptionQuality * 0.2 +
         randomVariance()
     )
   );
@@ -298,7 +299,7 @@ function performAlgorithmicAnalysis(data) {
     100,
     Math.max(
       0,
-      (baseBudgetScore + baseTimeScore) / 2 + competitorBonus + randomVariance()
+      (baseBudgetScore + baseTimeScore) / 2 * 0.8 + competitorBonus * 0.5 + randomVariance()
     )
   );
 
@@ -306,8 +307,8 @@ function performAlgorithmicAnalysis(data) {
     100,
     Math.max(
       0,
-      (baseMarketScore + baseIndustryScore) / 2 +
-        descriptionQuality * 0.1 +
+      (baseMarketScore + baseIndustryScore) / 2 * 0.8 +
+        descriptionQuality * 0.2 +
         randomVariance()
     )
   );

@@ -17,16 +17,15 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static files
-app.use(express.static(path.join(__dirname)));
-
 // Request logging
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`);
   next();
 });
 
-// Routes
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Routes
 app.use("/api/validate", require("./routes/validate"));
 // app.use("/api/auth", require("./routes/auth")); // Removed for Firebase migration
@@ -37,6 +36,22 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "OK", message: "AI Startup Validator API is running" });
 });
 
+// Fallback for SPA (Single Page Application)
+// Matches any route that hasn't been handled by the above routes/static files
+app.get('*', (req, res, next) => {
+    // If it's an API request that wasn't matched, let it fall through to 404 handler
+    if (req.path.startsWith('/api')) {
+        return next();
+    }
+    // Otherwise serve index.html
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// 404 handler (for API routes not found)
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -44,23 +59,6 @@ app.use((err, req, res, next) => {
     error: "Something went wrong!",
     message: err.message,
   });
-});
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: "Route not found" });
-});
-
-// Start server
-// Serve static files from public directory
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Fallback for SPA (if needed, though this is a single page app)
-app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api')) {
-        return next();
-    }
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(PORT, () => {
