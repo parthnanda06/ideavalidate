@@ -7,9 +7,56 @@ class MLPredictionService {
     this.sentimentAnalyzer = new natural.SentimentAnalyzer(
       "English",
       natural.PorterStemmer,
-      "afinn"
+      "afinn",
     );
     this.tokenizer = new natural.WordTokenizer();
+
+    // Initialize Classifier
+    this.classifier = new natural.BayesClassifier();
+    this.isTrained = false;
+    this.trainingDataPath = require("path").join(
+      __dirname,
+      "../data/startup_training_data.json",
+    );
+    this.csvDataPath = require("path").join(
+      __dirname,
+      "../data/startup_ideas_5000.json",
+    );
+
+    // Auto-load and train if data exists (prefer CSV dataset)
+    this.loadTrainingData();
+  }
+
+  loadTrainingData() {
+    try {
+      const fs = require("fs");
+      // Try loading from CSV dataset first (startup_ideas_5000.json)
+      if (fs.existsSync(this.csvDataPath)) {
+        const data = JSON.parse(fs.readFileSync(this.csvDataPath, "utf8"));
+        this.train(data);
+      }
+      // Fall back to original training data
+      else if (fs.existsSync(this.trainingDataPath)) {
+        const data = JSON.parse(fs.readFileSync(this.trainingDataPath, "utf8"));
+        this.train(data);
+      }
+    } catch (error) {
+      console.error("Error loading training data:", error);
+    }
+  }
+
+  train(dataset) {
+    if (!dataset || !Array.isArray(dataset)) return;
+
+    dataset.forEach((item) => {
+      // Combine features for text classification
+      const text = `${item.description} ${item.industry} ${item.market_fit}`;
+      this.classifier.addDocument(text, item.status);
+    });
+
+    this.classifier.train();
+    this.isTrained = true;
+    console.log(`ML Model trained with ${dataset.length} examples.`);
   }
 
   initializeWeights() {
@@ -40,11 +87,25 @@ class MLPredictionService {
     // Apply more realistic curve - harder to get very high scores
     // Base capability + bonus for excellence
     const baseScore = score * 0.8;
-    const excellenceBonus = (score > 0.8) ? (score - 0.8) * 1.5 : 0;
-    
+    const excellenceBonus = score > 0.8 ? (score - 0.8) * 1.5 : 0;
+
     const finalScore = (baseScore + excellenceBonus) * 100;
 
-    return Math.min(98, Math.round(finalScore));
+    // Adjust based on trained model prediction if available
+    let adjustedScore = finalScore;
+    if (this.isTrained) {
+      // Create a similar text signature for the new idea
+      const ideaSignature = `${metrics.ideaDescription || ""} ${metrics.industry} ${metrics.marketPotential?.description || ""}`;
+      const prediction = this.classifier.classify(ideaSignature);
+
+      if (prediction === "success") {
+        adjustedScore = Math.min(99, finalScore + 5); // Boost for looking like a winner
+      } else if (prediction === "failure") {
+        adjustedScore = Math.max(10, finalScore - 10); // Penalize for looking like a loser
+      }
+    }
+
+    return Math.min(98, Math.round(adjustedScore));
   }
 
   analyzeSentiment(text) {
@@ -60,7 +121,56 @@ class MLPredictionService {
       confidence: Math.min(0.95, Math.abs(score) / 5 + 0.5), // Boost confidence baseline
     };
   }
-// ... (skip unchanged methods until performCompetitiveAnalysis) ...
+  analyzeTextComplexity(text) {
+    if (!text) return { complexityScore: 0 };
+
+    // Simple complexity metrics
+    const words = text.split(" ").length;
+    const longWords = text.split(" ").filter((w) => w.length > 6).length;
+    const sentences = text.split(/[.!?]+/).length;
+
+    // Score based on length and vocabulary (simplified)
+    const lengthScore = Math.min(100, (words / 50) * 100);
+    const vocabScore = Math.min(100, (longWords / words) * 300);
+
+    const complexityScore = Math.round(lengthScore * 0.6 + vocabScore * 0.4);
+
+    return {
+      complexityScore,
+      wordCount: words,
+      sentenceCount: sentences,
+    };
+  }
+
+  calculateMarketTrends(industry) {
+    // Simulated trend data based on industry
+    const trends = {
+      technology: {
+        trend: "growing rapidly",
+        factors: ["AI adoption", "Cloud computing"],
+      },
+      healthcare: {
+        trend: "stable growth",
+        factors: ["Aging population", "Telehealth"],
+      },
+      finance: {
+        trend: "evolving",
+        factors: ["Crypto", "DeFi", "Digital banking"],
+      },
+      education: {
+        trend: "transforming",
+        factors: ["Remote learning", "Personalization"],
+      },
+      ecommerce: {
+        trend: "growing",
+        factors: ["Mobile shopping", "Social commerce"],
+      },
+      saas: { trend: "highly competitive", factors: ["Vertical SaaS", "PLG"] },
+      default: { trend: "stable", factors: ["Digital transformation"] },
+    };
+
+    return trends[industry?.toLowerCase()] || trends.default;
+  }
   performCompetitiveAnalysis(competitors, industry) {
     if (!competitors || competitors.trim().length === 0) {
       return {
@@ -101,7 +211,7 @@ class MLPredictionService {
       recommendation: this.getCompetitiveRecommendation(
         competitionLevel,
         industry,
-        competitorList
+        competitorList,
       ),
     };
   }
@@ -109,8 +219,7 @@ class MLPredictionService {
   getCompetitiveRecommendation(level, industry, competitors) {
     const recommendations = {
       low: "First-mover advantage is possible, but verify market demand exists.",
-      moderate:
-        `With ${competitors ? competitors.length : 'some'} competitors, focus on your unique value proposition to stand out.`,
+      moderate: `With ${competitors ? competitors.length : "some"} competitors, focus on your unique value proposition to stand out.`,
       high: "Market is proving valid but crowded. Execute faster and better than incumbents.",
       "very high":
         "Highly saturated. Niche down specifically or find a 10x improvement over existing solutions.",
@@ -124,13 +233,35 @@ class MLPredictionService {
   generateMLInsights(ideaData, metrics) {
     const insights = [];
 
+    // Trained Model Insight
+    if (this.isTrained) {
+      const ideaSignature = `${ideaData.ideaDescription} ${ideaData.industry}`;
+      const prediction = this.classifier.classify(ideaSignature);
+      const classifications = this.classifier.getClassifications(ideaSignature);
+      const confidence =
+        classifications.find((c) => c.label === prediction)?.value || 0;
+
+      // Convert confidence to percentage (approximate)
+      const confidencePct = Math.round(confidence * 10000) / 100;
+
+      if (prediction === "success") {
+        insights.push(
+          `Match with successful startups: Our model detects patterns similar to successful companies in your description.`,
+        );
+      } else if (prediction === "failure") {
+        insights.push(
+          `Risk Alert: Your idea shares characteristics with startups that faced significant challenges. Focus on differentiation.`,
+        );
+      }
+    }
+
     // Sentiment analysis insight
     const sentiment = this.analyzeSentiment(ideaData.ideaDescription);
     if (sentiment.sentiment === "positive" && sentiment.score > 60) {
       insights.push(
         `Strong positive sentiment detected in idea articulation (${Math.round(
-          sentiment.score
-        )}% confidence)`
+          sentiment.score,
+        )}% confidence)`,
       );
     }
 
@@ -138,7 +269,7 @@ class MLPredictionService {
     const complexity = this.analyzeTextComplexity(ideaData.ideaDescription);
     if (complexity.complexityScore > 70) {
       insights.push(
-        `Well-articulated idea with strong clarity (complexity score: ${complexity.complexityScore})`
+        `Well-articulated idea with strong clarity (complexity score: ${complexity.complexityScore})`,
       );
     }
 
@@ -147,19 +278,35 @@ class MLPredictionService {
     insights.push(
       `${ideaData.industry} industry is ${
         trend.trend
-      } with key drivers: ${trend.factors.join(", ")}`
+      } with key drivers: ${trend.factors.join(", ")}`,
     );
 
     // Competitive analysis insight
     const competitive = this.performCompetitiveAnalysis(
       ideaData.competitors,
-      ideaData.industry
+      ideaData.industry,
     );
     insights.push(
-      `Competition level: ${competitive.competitionLevel} (market saturation: ${competitive.marketSaturation}%)`
+      `Competition level: ${competitive.competitionLevel} (market saturation: ${competitive.marketSaturation}%)`,
     );
 
     return insights;
+  }
+
+  // Placeholder for external data fetching
+  async fetchExternalMarketData(query) {
+    // In a real production environment, this would call Google Custom Search API or Crunchbase API
+    // containing: this.http.get('https://api.crunchbase.com/...')
+
+    console.log(`Fetching external data for: ${query}`);
+    // Simulating network delay
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    return {
+      source: "Simulated External Data",
+      trend: "Stable",
+      newsSentiment: "Neutral",
+    };
   }
 }
 

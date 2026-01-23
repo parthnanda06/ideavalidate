@@ -1,0 +1,82 @@
+[
+  {
+    "name": "Uber",
+    "description": "A mobile app connecting passengers with drivers for hire.",
+    "industry": "transportation",
+    "status": "success",
+    "market_fit": "high",
+    "innovation": "high"
+  },
+  {
+    "name": "Quibi",
+    "description": "Short-form streaming platform for mobile devices.",
+    "industry": "entertainment",
+    "status": "failure",
+    "market_fit": "low",
+    "innovation": "moderate"
+  },
+  {
+    "name": "Airbnb",
+    "description": "Online marketplace for lodging, primarily homestays for vacation rentals, and tourism activities.",
+    "industry": "hospitality",
+    "status": "success",
+    "market_fit": "high",
+    "innovation": "high"
+  },
+  {
+    "name": "Juicero",
+    "description": "Wi-Fi connected juicing machine that used proprietary packs.",
+    "industry": "food_beverage",
+    "status": "failure",
+    "market_fit": "low",
+    "innovation": "low"
+  },
+  {
+    "name": "Slack",
+    "description": "Channel-based messaging platform for teams.",
+    "industry": "technology",
+    "status": "success",
+    "market_fit": "high",
+    "innovation": "high"
+  },
+  {
+    "name": "Theranos",
+    "description": "Health technology company claiming to perform standard blood tests with a few drops of blood.",
+    "industry": "healthcare",
+    "status": "failure",
+    "market_fit": "high",
+    "innovation": "fake"
+  },
+  {
+    "name": "Stripe",
+    "description": "Financial services and software as a service company offering payment processing software.",
+    "industry": "finance",
+    "status": "success",
+    "market_fit": "high",
+    "innovation": "high"
+  },
+  {
+    "name": "WeWork",
+    "description": "Provider of coworking spaces, including physical and virtual shared offices.",
+    "industry": "real_estate",
+    "status": "mixed",
+    "market_fit": "moderate",
+    "innovation": "moderate"
+  },
+  {
+    "name": "Peloton",
+    "description": "Exercise equipment and media company.",
+    "industry": "fitness",
+    "status": "success",
+    "market_fit": "high",
+    "innovation": "high"
+  },
+  {
+    "name": "MoviePass",
+    "description": "Subscription service for watching movies in theaters.",
+    "industry": "entertainment",
+    "status": "failure",
+    "market_fit": "high",
+    "innovation": "moderate"
+  }
+]

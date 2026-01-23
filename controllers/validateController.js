@@ -613,6 +613,27 @@ function generateSolution(data, overallScore) {
   return solution;
 }
 
+
+async function trainModel(req, res) {
+  try {
+    const trainingData = req.body;
+    if (trainingData && Array.isArray(trainingData) && trainingData.length > 0) {
+      mlService.train(trainingData);
+      res.json({
+        message: "Model trained with provided data",
+        count: trainingData.length,
+      });
+    } else {
+      mlService.loadTrainingData();
+      res.json({ message: "Model re-trained from default dataset" });
+    }
+  } catch (error) {
+    console.error("Training error:", error);
+    res.status(500).json({ error: "Failed to train model", message: error.message });
+  }
+}
+
 module.exports = {
   validateIdea,
+  trainModel
 };
