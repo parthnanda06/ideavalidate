@@ -37,7 +37,7 @@ Before you begin, ensure you have the following installed:
 
 - **Node.js** (v14 or higher)
 - **npm** (v6 or higher)
-- **MongoDB** (optional - app works without database in memory mode)
+- **Firebase** (for backend/database)
 
 ## 🛠️ Installation
 
@@ -59,7 +59,7 @@ This will install all required packages:
 - cors
 - body-parser
 - dotenv
-- mongoose
+- firebase-admin
 - bcryptjs
 - jsonwebtoken
 - axios
@@ -77,28 +77,29 @@ Edit the `.env` file with your configuration:
 
 ```env
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/startup-validator
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_CLIENT_EMAIL=your_client_email
+FIREBASE_PRIVATE_KEY=your_private_key_with_newlines
 JWT_SECRET=your_secret_key_here_change_this_in_production
 OPENAI_API_KEY=your_openai_api_key_here_optional
 NODE_ENV=development
 ```
 
-**Important**:
+### 3.1 Firebase Credentials
+1. Go to Firebase Console > Project Settings > Service Accounts
+2. Click "Generate New Private Key"
+3. Save the file as `serviceAccountKey.json` in the project root directory
+4. Or use the environment variables as shown above for production/Vercel
 
-- The app works without MongoDB (uses in-memory storage)
+**Important**:
+- The app uses **Firebase** for persistence.
 - OpenAI API key is optional (uses algorithmic validation if not provided)
 
-### 4. Start MongoDB (Optional)
+The application now uses Firebase Firestore for data persistence.
 
-If you want to use persistent storage:
-
-```bash
-# Windows
-mongod
-
-# Mac/Linux
-sudo systemctl start mongod
-```
+1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
+2. Enable Firestore Database
+3. Enable Authentication (if using auth features)
 
 ## 🚀 Running the Application
 
@@ -144,9 +145,6 @@ final year project/
 │   └── validationsController.js # Validation CRUD
 ├── middleware/
 │   └── auth.js              # JWT authentication middleware
-├── models/
-│   ├── User.js              # User schema
-│   └── Validation.js        # Validation schema
 ├── routes/
 │   ├── auth.js              # Auth routes
 │   ├── validate.js          # Validation routes
@@ -281,7 +279,7 @@ Edit `styles.css` root variables:
 - JWT-based authentication
 - CORS protection
 - Input validation
-- SQL injection protection (via Mongoose)
+- Input validation
 - XSS protection
 
 ## 📱 Responsive Design
@@ -304,11 +302,10 @@ netstat -ano | findstr :5000
 taskkill /PID <PID> /F
 ```
 
-### MongoDB Connection Error
+### Firebase Connection Error
 
-- The app works without MongoDB
-- Check if MongoDB is running
-- Verify MONGODB_URI in .env
+- Ensure `serviceAccountKey.json` exists in root OR environment variables are set
+- Check if Firestore is enabled in your Firebase Console
 
 ### CORS Issues
 
