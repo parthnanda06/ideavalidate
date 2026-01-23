@@ -70,6 +70,24 @@ async function validateIdea(req, res) {
         // Continue - don't fail the request just because save failed
     }
 
+    // Continuous Learning: Update model with this new data point
+    if (analysis && analysis.overallScore) {
+       let status = "moderate";
+       if (analysis.overallScore >= 80) status = "success";
+       else if (analysis.overallScore <= 50) status = "failure";
+       
+       try {
+           // Synchronously update the model to ensure it persists in the current instance
+           mlService.learn({
+              description: ideaDescription,
+              industry: industry,
+              market_fit: analysis.metrics?.marketPotential?.description || `Target Market: ${targetMarket}`
+           }, status);
+       } catch (err) {
+           console.error("Auto-learning failed:", err.message);
+       }
+    }
+
     res.json(analysis);
   } catch (error) {
     console.error("Validation error:", error);

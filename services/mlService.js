@@ -59,6 +59,18 @@ class MLPredictionService {
     console.log(`ML Model trained with ${dataset.length} examples.`);
   }
 
+  // New method to learn from single new example
+  learn(ideaData, status) {
+    if (!ideaData || !status) return;
+
+    const text = `${ideaData.description} ${ideaData.industry} ${ideaData.market_fit}`;
+    this.classifier.addDocument(text, status);
+    
+    // Retrain the model with the new data included
+    this.classifier.train();
+    console.log("ML Model updated with new user data.");
+  }
+
   initializeWeights() {
     // Adjusted weights for more balanced scoring
     return {
