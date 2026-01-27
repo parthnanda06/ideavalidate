@@ -184,13 +184,28 @@ function toggleMobileMenu() {
 }
 
 // Form Handling
+function handleIndustryChange() {
+  const industrySelect = document.getElementById("industry");
+  const customIndustryInput = document.getElementById("customIndustry");
+
+  if (industrySelect.value === "Others") {
+    customIndustryInput.style.display = "block";
+  } else {
+    customIndustryInput.style.display = "none";
+    customIndustryInput.value = ""; // clear old value
+  }
+ }
+
 async function handleFormSubmit(e) {
   e.preventDefault();
+
+  const industrySelect = document.getElementById("industry").value;
+  const customIndustry = document.getElementById("customIndustry").value;
 
   const formData = {
     ideaName: document.getElementById("ideaName").value,
     ideaDescription: document.getElementById("ideaDescription").value,
-    industry: document.getElementById("industry").value,
+    industry: industrySelect === "Others" ? customIndustry,
     targetMarket: document.getElementById("targetMarket").value,
     targetAudience: document.getElementById("targetAudience").value,
     problemSolved: document.getElementById("problemSolved").value,
