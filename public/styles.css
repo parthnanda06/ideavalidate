@@ -393,6 +393,11 @@ body {
   transition: all 0.3s;
 }
 
+#customIndustry{
+  display: none; 
+  margin-top: 10px;
+}
+
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
