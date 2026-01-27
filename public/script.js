@@ -184,7 +184,8 @@ function toggleMobileMenu() {
 }
 
 // Form Handling
-function handleIndustryChange() {
+
+ function handleIndustryChange() {
   const industrySelect = document.getElementById("industry");
   const customIndustryInput = document.getElementById("customIndustry");
 
@@ -205,7 +206,7 @@ async function handleFormSubmit(e) {
   const formData = {
     ideaName: document.getElementById("ideaName").value,
     ideaDescription: document.getElementById("ideaDescription").value,
-    industry: industrySelect === "Others" ? customIndustry,
+    industry: industrySelect === "Others" ? customIndustry : industrySelect,
     targetMarket: document.getElementById("targetMarket").value,
     targetAudience: document.getElementById("targetAudience").value,
     problemSolved: document.getElementById("problemSolved").value,
