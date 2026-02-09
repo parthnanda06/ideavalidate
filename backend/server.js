@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 });
 
 // Serve static files from public directory
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Routes
 app.use("/api/validate", require("./routes/validate"));
@@ -36,6 +36,19 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "OK", message: "AI Startup Validator API is running" });
 });
 
+// Serve Firebase Config to Frontend
+app.get("/api/config", (req, res) => {
+  res.json({
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID,
+    measurementId: process.env.FIREBASE_MEASUREMENT_ID
+  });
+});
+
 // Fallback for SPA (Single Page Application)
 // Matches any route that hasn't been handled by the above routes/static files
 app.get('*', (req, res, next) => {
@@ -44,7 +57,7 @@ app.get('*', (req, res, next) => {
         return next();
     }
     // Otherwise serve index.html
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, '../frontend', 'index.html'));
 });
 
 // 404 handler (for API routes not found)

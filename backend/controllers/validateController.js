@@ -130,6 +130,8 @@ Unique Value: ${data.uniqueValue || "Not specified"}
 Budget: ${data.estimatedBudget || "Not specified"}
 Timeframe: ${data.timeframe || "Not specified"}
 Competitors: ${data.competitors || "Not specified"}
+Problem Severity: ${data.problemSeverity || "Not specified"}
+Existing Alternatives: ${data.existingAlternatives || "Not specified"}
 
 Please provide:
 1. Overall viability score (0-100)
@@ -180,8 +182,19 @@ Format as JSON with the following structure:
     }
   );
 
-  const aiResponse = response.data.choices[0].message.content;
-  return JSON.parse(aiResponse);
+  let aiResponse = response.data.choices[0].message.content;
+  
+  // Clean up markdown code blocks if present
+  aiResponse = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+  
+  const parsedResponse = JSON.parse(aiResponse);
+  
+  return {
+    ...parsedResponse,
+    method: "OpenAI GPT-4",
+    aiEnhanced: true,
+    technologyUsed: ["GPT-4", "NLP", "Validation Logic"]
+  };
 }
 
 async function performEnhancedAnalysis(data) {
@@ -224,6 +237,7 @@ async function performEnhancedAnalysis(data) {
       },
       insights: combinedInsights,
       aiEnhanced: true,
+      method: "Local ML & RAG",
       technologyUsed: [
         "RAG",
         "Neural Network",
@@ -294,12 +308,23 @@ function performAlgorithmicAnalysis(data) {
   const hasCompetitors = data.competitors && data.competitors.length > 0;
   const competitorBonus = hasCompetitors ? 15 : 0;
 
-  // Calculate scores with some randomization for realism
-  const randomVariance = () => Math.floor(Math.random() * 15) - 7;
+  // Calculate scores deterministically
+  // We remove randomVariance to ensure consistent results for the same input.
+  
+  // Problem Severity Impact
+  const severityScores = {
+    "High": 15,
+    "Medium": 5,
+    "Low": -5
+  };
+  const severityBonus = severityScores[data.problemSeverity] || 0;
+
+  // Existing Alternatives Impact
+  const alternativesPenalty = data.existingAlternatives === "Yes" ? -10 : 10;
 
   const marketPotentialScore = Math.min(
     100,
-    Math.max(0, baseIndustryScore * 0.7 + descriptionQuality * 0.3 + randomVariance())
+    Math.max(0, baseIndustryScore * 0.7 + descriptionQuality * 0.3 + severityBonus)
   );
 
   const uniquenessScore = Math.min(
@@ -308,8 +333,8 @@ function performAlgorithmicAnalysis(data) {
       0,
       baseMarketScore * 0.5 +
         uniquenessBonus +
-        descriptionQuality * 0.2 +
-        randomVariance()
+        descriptionQuality * 0.2 + 
+        alternativesPenalty
     )
   );
 
@@ -317,7 +342,7 @@ function performAlgorithmicAnalysis(data) {
     100,
     Math.max(
       0,
-      (baseBudgetScore + baseTimeScore) / 2 * 0.8 + competitorBonus * 0.5 + randomVariance()
+      (baseBudgetScore + baseTimeScore) / 2 * 0.8 + competitorBonus * 0.5
     )
   );
 
@@ -326,8 +351,7 @@ function performAlgorithmicAnalysis(data) {
     Math.max(
       0,
       (baseMarketScore + baseIndustryScore) / 2 * 0.8 +
-        descriptionQuality * 0.2 +
-        randomVariance()
+        descriptionQuality * 0.2
     )
   );
 

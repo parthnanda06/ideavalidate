@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Startup Validator | Academic Research Tool</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="An AI-based decision support system for evaluating startup ideas using market demand, feasibility, and risk analysis metrics.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="#" class="nav-brand">
+                <i class="fas fa-brain"></i>
+                <span>IdeaValidator</span>
+            </a>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#hero" class="nav-link active">Home</a></li>
+                <li><a href="#features" class="nav-link">Problem Statement</a></li>
+                <li><a href="#validator" class="nav-link">Evaluation Model</a></li>
+                <li><a href="#architecture" class="nav-link">System Architecture</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <!-- Auth removed -->
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero">
+        <div class="container hero-content">
+            <h1 class="hero-title">AI-Based System to Evaluate Startup Ideas Using Market & Risk Factors</h1>
+            <p class="hero-subtitle">
+                A decision-support platform that analyzes feasibility, market demand, risk, and revenue potential using structured inputs and AI models.
+            </p>
+            
+            <div class="hero-buttons">
+                <a href="#validator" class="btn-primary">
+                    <i class="fas fa-search-dollar"></i> Evaluate an Idea
+                </a>
+                <a href="#architecture" class="btn-secondary">
+                    <i class="fas fa-network-wired"></i> View System Architecture
+                </a>
+            </div>
+
+            <div class="hero-factors">
+                <div class="factor-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h4>Market Demand Score</h4>
+                    <p>Used as input parameter for the AI evaluation model</p>
+                </div>
+                <div class="factor-card">
+                    <i class="fas fa-fingerprint"></i>
+                    <h4>Uniqueness Index</h4>
+                    <p>Used as input parameter for the AI evaluation model</p>
+                </div>
+                <div class="factor-card">
+                    <i class="fas fa-cogs"></i>
+                    <h4>Feasibility Fit</h4>
+                    <p>Used as input parameter for the AI evaluation model</p>
+                </div>
+                <div class="factor-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h4>Risk Estimation</h4>
+                    <p>Used as input parameter for the AI evaluation model</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Statement Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Problem Statement & Motivation</h2>
+            <p class="section-subtitle">Addressing the high failure rate of early-stage startups through data-driven validation.</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-exclamation-circle"></i></div>
+                    <h3>The Problem</h3>
+                    <p>90% of startups fail, often due to lack of market need. Founders rely on intuition rather than data, leading to wasted resources on unviable ideas.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-lightbulb"></i></div>
+                    <h3>The Solution</h3>
+                    <p>An automated, AI-driven validation framework that acts as a preliminary filter, providing objective scoring based on trained startup datasets.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fas fa-bullseye"></i></div>
+                    <h3>The Outcome</h3>
+                    <p>Researchers and entrepreneurs receive a structured feasibility report, reducing risk and guiding pivot decisions before MVP development.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Validator Section (Wizard) -->
+    <section id="validator" class="validator">
+        <div class="container validator-container">
+            <!-- Wizard Progress -->
+            <div class="wizard-progress">
+                <div class="progress-step active" data-step="1">1</div>
+                <div class="progress-line"></div>
+                <div class="progress-step" data-step="2">2</div>
+                <div class="progress-line"></div>
+                <div class="progress-step" data-step="3">3</div>
+                <div class="progress-line"></div>
+                <div class="progress-step" data-step="4">4</div>
+            </div>
+            <div class="wizard-labels">
+                <span>Overview</span>
+                <span>Market</span>
+                <span>Details</span>
+                <span>Review</span>
+            </div>
+
+            <!-- Form -->
+            <form id="validatorForm" class="validator-form" onsubmit="handleFormSubmit(event)">
+                
+                <!-- Step 1: Idea Overview -->
+                <div id="step1" class="wizard-step active">
+                    <h3>Idea Overview</h3>
+                    <p class="helper-text">Define the core concept and classification of your startup idea.</p>
+                    
+                    <div class="form-group">
+                        <label for="ideaName">Project / Idea Title <span style="color:red">*</span></label>
+                        <input type="text" id="ideaName" required placeholder="e.g., EcoStream, FinGuard AI">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="industry">Primary Industry / Domain <span style="color:red">*</span></label>
+                        <select id="industry" onchange="handleIndustryChange()" required>
+                            <option value="">Select an Industry</option>
+                            <option value="Technology">Technology & SaaS</option>
+                            <option value="Healthcare">Healthcare & Biotech</option>
+                            <option value="Finance">Fintech & Banking</option>
+                            <option value="Education">EdTech & E-Learning</option>
+                            <option value="E-commerce">E-commerce & Retail</option>
+                            <option value="GreenTech">GreenTech & Sustainability</option>
+                            <option value="Others">Others (Specify)</option>
+                        </select>
+                        <input type="text" id="customIndustry" placeholder="Please specify industry">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ideaDescription">Problem Description (Input for NLP Model) <span style="color:red">*</span></label>
+                        <textarea id="ideaDescription" rows="5" required placeholder="Describe the problem, your proposed solution, and how it works..."></textarea>
+                    </div>
+
+                    <div class="wizard-buttons">
+                        <button type="button" class="btn-next" onclick="nextStep(1)">Next Step <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Market & Audience -->
+                <div id="step2" class="wizard-step">
+                    <h3>Market & Audience</h3>
+                    <p class="helper-text">Analyze who needs this solution and the market size.</p>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="targetMarket">Target Market (B2B/B2C) <span style="color:red">*</span></label>
+                            <select id="targetMarket" required>
+                                <option value="">Select Market Type</option>
+                                <option value="B2B">Business to Business (B2B)</option>
+                                <option value="B2C">Business to Consumer (B2C)</option>
+                                <option value="B2B2C">B2B2C (Hybrid)</option>
+                                <option value="C2C">Consumer to Consumer (C2C)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="targetAudience">Target Audience <span style="color:red">*</span></label>
+                            <input type="text" id="targetAudience" required placeholder="e.g., Remote workers, Small business owners">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="problemSolved">Core Problem Solved <span style="color:red">*</span></label>
+                        <input type="text" id="problemSolved" required placeholder="e.g., High cost of cross-border payments">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="problemSeverity">Problem Severity (Self-Assessed)</label>
+                        <select id="problemSeverity" required>
+                            <option value="High">Critical Pain Point (High Urgency)</option>
+                            <option value="Medium">Efficiency Improvement (Medium Urgency)</option>
+                            <option value="Low">Accessory / nice-to-have (Low Urgency)</option>
+                        </select>
+                    </div>
+
+                    <div class="wizard-buttons">
+                        <button type="button" class="btn-prev" onclick="prevStep(2)">Back</button>
+                        <button type="button" class="btn-next" onclick="nextStep(2)">Next Step <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Differentiation & Constraints -->
+                <div id="step3" class="wizard-step">
+                    <h3>Differentiation & Feasibility</h3>
+                    <p class="helper-text">What makes this unique and what resources are required?</p>
+
+                    <div class="form-group">
+                        <label for="uniqueValue">Unique Value Proposition (USP) <span style="color:red">*</span></label>
+                        <input type="text" id="uniqueValue" required placeholder="e.g., 50% cheaper, AI-automated processing">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="competitors">Key Competitors</label>
+                            <input type="text" id="competitors" placeholder="e.g., PayPal, Stripe, Local Banks">
+                        </div>
+                        <div class="form-group">
+                            <label>Are there existing alternatives?</label>
+                            <div class="radio-group">
+                                <label><input type="radio" name="existingAlternatives" value="Yes"> Yes</label>
+                                <label><input type="radio" name="existingAlternatives" value="No" checked> No</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="estimatedBudget">Estimated Initial Budget</label>
+                            <select id="estimatedBudget" required>
+                                <option value="0-1k">Bootstrapped ($0 - $1k)</option>
+                                <option value="1k-10k">Seed ($1k - $10k)</option>
+                                <option value="10k-50k">Angel ($10k - $50k)</option>
+                                <option value="50k+">VC ($50k+)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="timeframe">Time to MVP</label>
+                            <select id="timeframe" required>
+                                <option value="1month">Less than 1 month</option>
+                                <option value="1-3months">1-3 Months</option>
+                                <option value="3-6months">3-6 Months</option>
+                                <option value="6months+">6 Months+</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="wizard-buttons">
+                        <button type="button" class="btn-prev" onclick="prevStep(3)">Back</button>
+                        <button type="button" class="btn-next" onclick="nextStep(3)">Review Details <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Review & Submit -->
+                <div id="step4" class="wizard-step">
+                    <h3>Review & Validate</h3>
+                    <p class="helper-text">Review your inputs before running the AI evaluation model.</p>
+
+                    <div id="reviewSummary" class="review-summary">
+                        <!-- Populated via JS -->
+                    </div>
+
+                    <div class="wizard-buttons">
+                        <button type="button" class="btn-prev" onclick="prevStep(4)">Back</button>
+                        <button type="submit" class="btn-validate">
+                            <i class="fas fa-cogs"></i> Run Validation Model
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="loading-state" style="display: none;">
+                <div class="loader"></div>
+                <p>Analyzing Feasibility...</p>
+                <div class="sub-loading">Running NLP Analysis • Calculating Risk Metrics • Benchmarking against Dataset</div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsContainer" class="results-container" style="display: none;">
+                <div class="results-header">
+                    <h3>Validation Report</h3>
+                    <button class="btn-new-validation" onclick="resetForm()">
+                        <i class="fas fa-redo"></i> Evaluate Another
+                    </button>
+                </div>
+
+                <div class="overall-evaluation">
+                    <div class="score-card">
+                        <span class="score-label">Overall Feasibility Score</span>
+                        <span class="score-value" id="overallScore">0</span>
+                        <span class="score-max">/ 100</span>
+                    </div>
+                    <div class="verdict-card">
+                        <h4>AI Verdict</h4>
+                        <span id="verdictBadge" class="verdict-badge">Pending</span>
+                        <p id="scoreDescription">Analysis pending...</p>
+                        <div id="goNoGo"></div>
+                    </div>
+                </div>
+
+                <div class="charts-section">
+                    <div class="chart-container">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                    <p class="chart-caption">Figure 1: Multi-factor evaluation across 5 key startup dimensions.</p>
+                </div>
+
+                <div class="detailed-analysis">
+                    <div class="analysis-title">
+                        <i class="fas fa-robot" style="color: var(--primary-color);"></i>
+                        <h4>AI-Generated Insights</h4>
+                    </div>
+                    <p class="ai-disclaimer">Analysis generated based on trained models. Use as guidance, not financial advice.</p>
+
+                    <div class="analysis-grid">
+                        <div class="analysis-card strengths">
+                            <h5><i class="fas fa-check-circle"></i> Key Strengths</h5>
+                            <ul id="strengthsList"></ul>
+                        </div>
+                        <div class="analysis-card weaknesses">
+                            <h5><i class="fas fa-exclamation-triangle"></i> Potential Risks</h5>
+                            <ul id="challenges"></ul>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <h5><i class="fas fa-lightbulb"></i> Strategic Recommendations</h5>
+                        <ul id="recommendations" class="recommendations"></ul>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn-save" onclick="window.print()">
+                            <i class="fas fa-file-pdf"></i> Save Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section id="architecture" class="architecture-section">
+        <div class="container">
+            <h2 class="section-title">System Architecture</h2>
+            <p class="section-subtitle">Technical overview of the evaluation pipeline</p>
+
+            <div class="architecture-diagram">
+                <div class="arch-col">
+                    <div class="arch-box">
+                        <i class="fas fa-laptop-code"></i>
+                        <h4>Frontend UI</h4>
+                        <p>User Inputs & Visualization</p>
+                    </div>
+                </div>
+                <i class="fas fa-arrow-right arch-arrow"></i>
+                <div class="arch-col">
+                    <div class="arch-box">
+                        <i class="fas fa-server"></i>
+                        <h4>API Server</h4>
+                        <p>Node.js / Express Controller</p>
+                    </div>
+                </div>
+                <i class="fas fa-arrow-right arch-arrow"></i>
+                <div class="arch-col">
+                    <div class="arch-box">
+                        <i class="fas fa-brain"></i>
+                        <h4>AI Engine</h4>
+                        <p>NLP & Scoring Logic</p>
+                    </div>
+                </div>
+                <i class="fas fa-arrow-right arch-arrow"></i>
+                <div class="arch-col">
+                    <div class="arch-box">
+                        <i class="fas fa-database"></i>
+                        <h4>Knowledge Base</h4>
+                        <p>Startup Datasets</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="arch-details">
+                <div class="detail-item"><strong>Frontend:</strong> HTML5, CSS3, JavaScript (Vanilla), Chart.js for visualization.</div>
+                <div class="detail-item"><strong>Backend:</strong> Node.js & Express.js for handling validation requests.</div>
+                <div class="detail-item"><strong>AI/ML:</strong> NLP (Natural Language Processing) for sentiment and text complexity analysis.</div>
+                <div class="detail-item"><strong>Database:</strong> Firebase (optional) & Local JSON Dataset (5000+ points).</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <h2 class="section-title">About The Project</h2>
+            <p class="section-subtitle">Academic project developed for Final Year Project (FYP)</p>
+            
+            <div class="about-content">
+                <div>
+                    <h3>Project Objective</h3>
+                    <p style="margin-bottom: 1rem;">This system aims to bridge the gap between subjective ideation and objective market validation. By leveraging historical data and AI analysis, it provides early-stage founders with a "pre-market" feasibility check.</p>
+                    
+                    <h3>Limitations</h3>
+                    <p>The system provides probabilistic scores based on available data patterns. It does not guarantee market success or failure but serves as a risk-assessment tool.</p>
+                </div>
+                <div class="tech-stack">
+                    <h4>Technologies Used</h4>
+                    <div class="tech-icons">
+                        <span>Node.js</span>
+                        <span>Express</span>
+                        <span>OpenAI GPT-4</span>
+                        <span>Natural NLP</span>
+                        <span>JavaScript</span>
+                        <span>Chart.js</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                &copy; 2024 AI Startup Validator. Academic Research Project.
+            </div>
+        </div>
+    </footer>
+    <!-- Firebase Config -->
+    <script src="script.js"></script>
+</body>
+</html>

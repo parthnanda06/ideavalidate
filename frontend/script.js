@@ -1,26 +1,9 @@
 // API Configuration
 const API_BASE_URL = "/api";
 
-// --- FIREBASE CONFIGURATION ---
-const firebaseConfig = {
-  apiKey: "AIzaSyDwuLhzPDeEGGtJ-LbCDCd0iKL10St8qsM",
-  authDomain: "finalyearproject-d9bd9.firebaseapp.com",
-  projectId: "finalyearproject-d9bd9",
-  storageBucket: "finalyearproject-d9bd9.firebasestorage.app",
-  messagingSenderId: "326440517004",
-  appId: "1:326440517004:web:f81b3bca1fc5607b5e6aa9",
-  measurementId: "G-6XKSED8MVT"
-};
-
-// Initialize Firebase
-if (typeof firebase !== 'undefined') {
-    firebase.initializeApp(firebaseConfig);
-} else {
-    console.error("Firebase SDK not loaded");
-}
+// Firebase removed as per user request
 
 // State Management
-let currentUser = null;
 let savedValidations = [];
 try {
   savedValidations = JSON.parse(localStorage.getItem("validations")) || [];
@@ -30,9 +13,8 @@ try {
 }
 
 // Initialize on page load
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   initializeApp();
-  setupFirebaseAuth();
 });
 
 function initializeApp() {
@@ -43,55 +25,7 @@ function initializeApp() {
   setupNavigation();
 }
 
-function setupFirebaseAuth() {
-    if (typeof firebase === 'undefined') return;
-
-    const auth = firebase.auth();
-    const provider = new firebase.auth.GoogleAuthProvider();
-
-    // Sign In Button
-    document.getElementById("google-signin-btn")?.addEventListener("click", () => {
-        auth.signInWithPopup(provider)
-            .catch((error) => {
-                console.error("Google Sign-In Error:", error);
-                alert("Sign-in failed: " + error.message);
-            });
-    });
-
-    // Sign Out Button
-    document.getElementById("signout-btn")?.addEventListener("click", () => {
-        auth.signOut();
-    });
-
-    // Auth State Observer
-    auth.onAuthStateChanged((user) => {
-        currentUser = user;
-        updateAuthUI(user);
-        if (user) {
-            // Sync validations from server (Firestore)
-            loadSavedValidations();
-        } else {
-            // Clear or reset view
-            savedValidations = JSON.parse(localStorage.getItem("validations")) || [];
-            updateDashboardStats();
-        }
-    });
-}
-
-function updateAuthUI(user) {
-    const signInBtn = document.getElementById("google-signin-btn");
-    const userInfo = document.getElementById("user-info");
-    const userPhoto = document.getElementById("user-photo");
-
-    if (user) {
-        signInBtn.style.display = "none";
-        userInfo.style.display = "flex";
-        userPhoto.src = user.photoURL || "https://via.placeholder.com/32";
-    } else {
-        signInBtn.style.display = "flex";
-        userInfo.style.display = "none";
-    }
-}
+// Auth setup removed
 
 // Event Listeners
 function setupEventListeners() {
@@ -185,23 +119,103 @@ function toggleMobileMenu() {
 
 // Form Handling
 
- function handleIndustryChange() {
+// --- WIZARD LOGIC ---
+let currentStep = 1;
+let chartInstance = null;
+
+function showStep(step) {
+  // Hide all steps
+  document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+  
+  // Show target step
+  document.getElementById(`step${step}`).classList.add('active');
+  
+  // Update progress bar
+  document.querySelectorAll('.progress-step').forEach(el => {
+    const stepNum = parseInt(el.getAttribute('data-step'));
+    if (stepNum <= step) {
+      el.classList.add('active');
+    } else {
+      el.classList.remove('active');
+    }
+  });
+
+  currentStep = step;
+}
+
+function nextStep(current) {
+  if (validateStep(current)) {
+    if (current === 3) {
+      updateReviewSummary();
+    }
+    showStep(current + 1);
+  }
+}
+
+function prevStep(current) {
+  showStep(current - 1);
+}
+
+function validateStep(step) {
+  const stepEl = document.getElementById(`step${step}`);
+  const inputs = stepEl.querySelectorAll('input[required], select[required], textarea[required]');
+  let isValid = true;
+
+  inputs.forEach(input => {
+    if (!input.value.trim()) {
+      isValid = false;
+      input.style.borderColor = 'var(--danger-color)';
+      // Shake animation or visual cue could be added here
+    } else {
+      input.style.borderColor = 'var(--border-color)';
+    }
+  });
+
+  if (!isValid) {
+    alert("Please fill in all required fields.");
+  }
+  return isValid;
+}
+
+function handleIndustryChange() {
   const industrySelect = document.getElementById("industry");
   const customIndustryInput = document.getElementById("customIndustry");
 
   if (industrySelect.value === "Others") {
     customIndustryInput.style.display = "block";
+    customIndustryInput.required = true;
   } else {
     customIndustryInput.style.display = "none";
-    customIndustryInput.value = ""; // clear old value
+    customIndustryInput.required = false;
+    customIndustryInput.value = ""; 
   }
- }
+}
 
+function updateReviewSummary() {
+  const summary = document.getElementById('reviewSummary');
+  const getVal = (id) => document.getElementById(id).value;
+  
+  // existingAlternatives is radio
+  const alternatives = document.querySelector('input[name="existingAlternatives"]:checked')?.value || "No";
+
+  summary.innerHTML = `
+      <div class="review-item"><div class="review-label">Idea Name</div><div class="review-value">${getVal('ideaName')}</div></div>
+      <div class="review-item"><div class="review-label">Industry</div><div class="review-value">${getVal('industry') === 'Others' ? getVal('customIndustry') : getVal('industry')}</div></div>
+      <div class="review-item"><div class="review-label">Target Audience</div><div class="review-value">${getVal('targetAudience')}</div></div>
+      <div class="review-item"><div class="review-label">Problem Severity</div><div class="review-value">${getVal('problemSeverity')}</div></div>
+      <div class="review-item"><div class="review-label">Alternatives</div><div class="review-value">${alternatives}</div></div>
+      <div class="review-item"><div class="review-label">Budget</div><div class="review-value">${getVal('estimatedBudget') || 'Not specified'}</div></div>
+  `;
+}
+
+// --- FORM SUBMISSION ---
 async function handleFormSubmit(e) {
   e.preventDefault();
 
   const industrySelect = document.getElementById("industry").value;
   const customIndustry = document.getElementById("customIndustry").value;
+  const existingAlternatives = document.querySelector('input[name="existingAlternatives"]:checked')?.value;
+  const problemSeverity = document.getElementById("problemSeverity").value;
 
   const formData = {
     ideaName: document.getElementById("ideaName").value,
@@ -214,282 +228,168 @@ async function handleFormSubmit(e) {
     estimatedBudget: document.getElementById("estimatedBudget").value,
     timeframe: document.getElementById("timeframe").value,
     competitors: document.getElementById("competitors").value,
+    // New fields
+    problemSeverity,
+    existingAlternatives
   };
 
   // Show loading state
   document.getElementById("validatorForm").style.display = "none";
+  document.querySelector(".wizard-progress").style.display = "none";
+  document.querySelector(".wizard-labels").style.display = "none";
   document.getElementById("loadingState").style.display = "block";
   document.getElementById("resultsContainer").style.display = "none";
 
   try {
-    // Call API
     const results = await validateIdea(formData);
-
-    // Simulate processing time
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
+    
     // Hide loading, show results
     document.getElementById("loadingState").style.display = "none";
     document.getElementById("resultsContainer").style.display = "block";
 
-    // Display results
     displayResults(results, formData);
+    
+    document.getElementById("resultsContainer").scrollIntoView({ behavior: "smooth" });
 
-    // Scroll to results
-    document
-      .getElementById("resultsContainer")
-      .scrollIntoView({ behavior: "smooth" });
   } catch (error) {
     console.error("Validation error:", error);
-    alert(`An error occurred while validating your idea: ${error.message}. Please try again.`);
+    alert(`An error occurred: ${error.message}`);
     resetForm();
   }
 }
 
 async function validateIdea(formData) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/validate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
+  const response = await fetch(`${API_BASE_URL}/validate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(formData),
+  });
 
-    if (!response.ok) {
-      throw new Error("API request failed");
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.log("Using mock data due to API error:", error);
-    // Return mock data if API is not available
-    return generateMockValidation(formData);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || errorData.message || "API request failed");
   }
+  return await response.json();
 }
 
-function generateMockValidation(formData) {
-  // Generate realistic mock data based on input
-  const baseScore = 60 + Math.random() * 30;
-
-  const marketScore = Math.floor(baseScore + (Math.random() - 0.5) * 20);
-  const uniquenessScore = Math.floor(baseScore + (Math.random() - 0.5) * 25);
-  const feasibilityScore = Math.floor(baseScore + (Math.random() - 0.5) * 15);
-  const revenueScore = Math.floor(baseScore + (Math.random() - 0.5) * 20);
-
-  const overallScore = Math.floor(
-    (marketScore + uniquenessScore + feasibilityScore + revenueScore) / 4
-  );
-
-  return {
-    overallScore: Math.min(100, Math.max(0, overallScore)),
-    metrics: {
-      marketPotential: {
-        score: Math.min(100, Math.max(0, marketScore)),
-        description: `The ${formData.industry} industry shows strong growth potential with significant market opportunities.`,
-      },
-      uniqueness: {
-        score: Math.min(100, Math.max(0, uniquenessScore)),
-        description: `Your unique value proposition offers differentiation in the ${formData.targetMarket} market.`,
-      },
-      feasibility: {
-        score: Math.min(100, Math.max(0, feasibilityScore)),
-        description: `Based on the estimated budget and timeframe, this project appears feasible with proper planning.`,
-      },
-      revenuePotential: {
-        score: Math.min(100, Math.max(0, revenueScore)),
-        description: `Revenue projections are promising for the ${formData.targetMarket} segment.`,
-      },
-    },
-    insights: [
-      `Strong alignment with current ${formData.industry} industry trends`,
-      `Clear value proposition for ${formData.targetAudience}`,
-      `Addressable market size appears substantial`,
-      `Technology requirements are within reasonable bounds`,
-      `Customer acquisition channels are identifiable`,
-    ],
-    audienceAnalysis: `Your target audience of ${formData.targetAudience} represents a viable market segment. The ${formData.targetMarket} approach is well-suited for this demographic, with clear pain points that your solution addresses.`,
-    challenges: [
-      `Competition in the ${formData.industry} space is significant`,
-      `Customer acquisition costs may be high initially`,
-      `Technical implementation complexity should be carefully managed`,
-      `Regulatory compliance requirements need thorough investigation`,
-      `Scaling strategy will require careful planning`,
-    ],
-    recommendations: [
-      `Conduct detailed competitor analysis in the ${formData.industry} sector`,
-      `Develop a minimum viable product (MVP) to test market fit`,
-      `Build strategic partnerships to accelerate growth`,
-      `Focus on a specific niche within ${formData.targetAudience} initially`,
-      `Establish clear metrics for success and iterate based on feedback`,
-      `Consider multiple revenue streams to diversify income`,
-    ],
-  };
-}
-
+// --- RESULTS DISPLAY ---
 function displayResults(results, formData) {
-  // Overall Score
+  // 1. Overall Score & Verdict
   const overallScore = results.overallScore;
   document.getElementById("overallScore").textContent = overallScore;
-
-  // Set score circle color
-  const scoreCircle = document.getElementById("overallScoreCircle");
-  scoreCircle.style.setProperty("--score-angle", `${overallScore * 3.6}deg`);
-
-  // Score description
-  let scoreTitle = "Good Potential";
-  let scoreDesc = "Your idea shows promise with some areas for improvement.";
-
+  
+  const verdictBadge = document.getElementById("verdictBadge");
+  const verdictDesc = document.getElementById("scoreDescription");
+  
   if (overallScore >= 80) {
-    scoreTitle = "Excellent Potential!";
-    scoreDesc = "Your startup idea has strong viability across all metrics.";
+      verdictBadge.textContent = "High Potential";
+      verdictBadge.style.color = "#047857";
+      verdictBadge.style.backgroundColor = "#D1FAE5";
+      verdictDesc.textContent = "This idea demonstrates strong market viability and low risk.";
   } else if (overallScore >= 60) {
-    scoreTitle = "Good Potential";
-    scoreDesc = "Your idea shows promise with some areas for improvement.";
+      verdictBadge.textContent = "Feasible";
+      verdictBadge.style.color = "#1D4ED8";
+      verdictBadge.style.backgroundColor = "#DBEAFE";
+      verdictDesc.textContent = "The idea is viable but requires refinement in specific areas.";
   } else {
-    scoreTitle = "Needs Refinement";
-    scoreDesc =
-      "Consider refining your approach based on the recommendations below.";
+      verdictBadge.textContent = "High Risk";
+      verdictBadge.style.color = "#B91C1C";
+      verdictBadge.style.backgroundColor = "#FEE2E2";
+      verdictDesc.textContent = "Significant pivot or validation required before proceeding.";
   }
 
-  document.getElementById("scoreTitle").textContent = scoreTitle;
-  document.getElementById("scoreDescription").textContent = scoreDesc;
-
-  // Metrics
-  displayMetric("marketPotential", results.metrics.marketPotential);
-  displayMetric("uniqueness", results.metrics.uniqueness);
-  displayMetric("feasibility", results.metrics.feasibility);
-  displayMetric("revenue", results.metrics.revenuePotential);
-
-  // Key Insights
-  const insightsList = document.getElementById("keyInsights");
-  insightsList.innerHTML = "";
-  results.insights.forEach((insight) => {
-    const li = document.createElement("li");
-    li.textContent = insight;
-    insightsList.appendChild(li);
-  });
-
-  // Audience Analysis
-  document.getElementById("audienceAnalysis").textContent =
-    results.audienceAnalysis;
-
-  // Challenges
-  const challengesList = document.getElementById("challenges");
-  challengesList.innerHTML = "";
-  results.challenges.forEach((challenge) => {
-    const li = document.createElement("li");
-    li.textContent = challenge;
-    challengesList.appendChild(li);
-  });
-
-  // Recommendations
-  const recommendationsList = document.getElementById("recommendations");
-  recommendationsList.innerHTML = "";
-  results.recommendations.forEach((recommendation) => {
-    const li = document.createElement("li");
-    li.textContent = recommendation;
-    recommendationsList.appendChild(li);
-  });
-
-  // ML Predictions (if available)
-  if (results.mlPredictions) {
-    const section = document.getElementById("mlPredictionsSection");
-    const container = document.getElementById("mlPredictions");
-    
-    if (section && container) {
-      section.style.display = "block";
-      container.innerHTML = `
-            <p><strong>Success Probability:</strong> ${
-              results.mlPredictions.successProbability
-            }%</p>
-            <p><strong>Sentiment:</strong> ${
-              results.mlPredictions.sentimentAnalysis.sentiment
-            } (${Math.round(
-        results.mlPredictions.sentimentAnalysis.score
-      )}% positivity)</p>
-            <p><strong>Description Quality:</strong> ${
-              results.mlPredictions.textComplexity.complexityScore
-            }/100</p>
-            ${
-              results.mlPredictions.keyPhrases &&
-              results.mlPredictions.keyPhrases.length > 0
-                ? `<p><strong>Key Themes:</strong> ${results.mlPredictions.keyPhrases
-                    .map((p) => p.term)
-                    .join(", ")}</p>`
-                : ""
-            }
-        `;
-    }
+  // 2. Chart.js Implementation
+  const ctx = document.getElementById('radarChart').getContext('2d');
+  
+  if (chartInstance) {
+      chartInstance.destroy();
   }
 
-  // AI Technologies Used (if available)
-  if (results.technologyUsed) {
-    const section = document.getElementById("aiTechSection");
-    const container = document.getElementById("aiTechnologies");
+  chartInstance = new Chart(ctx, {
+      type: 'radar',
+      data: {
+          labels: ['Market Demand', 'Uniqueness', 'Feasibility', 'Revenue Potential', 'Risk Mitigation'],
+          datasets: [{
+              label: 'Idea Score',
+              data: [
+                  results.metrics.marketPotential.score,
+                  results.metrics.uniqueness.score,
+                  results.metrics.feasibility.score,
+                  results.metrics.revenuePotential.score,
+                  overallScore // Using overall as a proxy for risk mitigation for now, or derive it
+              ],
+              fill: true,
+              backgroundColor: 'rgba(37, 99, 235, 0.2)',
+              borderColor: 'rgb(37, 99, 235)',
+              pointBackgroundColor: 'rgb(37, 99, 235)',
+              pointBorderColor: '#fff',
+              pointHoverBackgroundColor: '#fff',
+              pointHoverBorderColor: 'rgb(37, 99, 235)'
+          }]
+      },
+      options: {
+          elements: {
+              line: { borderWidth: 3 }
+          },
+          scales: {
+              r: {
+                  angleLines: { display: false },
+                  suggestedMin: 0,
+                  suggestedMax: 100
+              }
+          }
+      }
+  });
 
-    if (section && container) {
-      section.style.display = "block";
-      container.innerHTML = `
-            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                ${results.technologyUsed
-                  .map(
-                    (tech) =>
-                      `<span style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); 
-                            color: white; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem;">
-                        <i class="fas fa-check-circle"></i> ${tech}
-                    </span>`
-                  )
-                  .join("")}
-            </div>
-            ${
-              results.confidenceScore
-                ? `<p style="margin-top: 1rem;"><strong>Analysis Confidence:</strong> ${Math.round(
-                    results.confidenceScore * 100
-                  )}%</p>`
-                : ""
-            }
-        `;
-    }
-  }
+  // 3. AI Recommendations & Lists
+  const createList = (id, items, icon) => {
+      const list = document.getElementById(id);
+      list.innerHTML = "";
+      items.slice(0, 4).forEach(item => { // Limit to 4 items
+          const li = document.createElement("li");
+          li.innerHTML = item; // Allow HTML if needed
+          list.appendChild(li);
+      });
+  };
 
-  // Store current validation
+  createList("strengthsList", results.insights.slice(0, 3) || ["Strong concept alignment"], "check");
+  createList("challenges", results.challenges || ["Competition analysis recommended"], "exclamation-triangle");
+  createList("recommendations", results.recommendations || ["Conduct user interviews"], "arrow-right");
+
+  // 4. ML Predictions (Append to strengths or logic)
+  // ... (ML logic can stay or be simplified)
+
+  // System Save Logic (Keep existing)
   window.currentValidation = {
     ...formData,
     ...results,
     timestamp: new Date().toISOString(),
   };
 
-  // Auto-save if user is logged in
-  if (currentUser) {
-    autoSaveValidation();
+  // Auto-save removed
+  
+  // Go/No-Go Logic
+  const goNoGo = document.getElementById('goNoGo');
+  if (overallScore >= 70) {
+      goNoGo.innerHTML = `<div style="margin-top:2rem; padding:1rem; background:#ECFDF5; border:1px solid #10B981; border-radius:8px; color:#065F46; text-align:center; font-weight:bold;">🚀 Recommendation: GO - Proceed to MVP</div>`;
+  } else {
+      goNoGo.innerHTML = `<div style="margin-top:2rem; padding:1rem; background:#FFFBEB; border:1px solid #F59E0B; border-radius:8px; color:#92400E; text-align:center; font-weight:bold;">⚠️ Recommendation: NO-GO - Refine Concept First</div>`;
   }
+
+  // Display Analysis Method
+  const method = results.method || "Standard Algorithmic Analysis";
+  const methodColor = method.includes("OpenAI") ? "#10a37f" : "#2563EB";
+  const methodIcon = method.includes("OpenAI") ? "fa-robot" : "fa-laptop-code";
+  
+  goNoGo.innerHTML += `
+      <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #e2e8f0; font-size: 0.85rem; color: #64748B; text-align: center;">
+          <i class="fas ${methodIcon}" style="color: ${methodColor}; margin-right: 5px;"></i>
+          Powered by: <strong style="color: ${methodColor};">${method}</strong>
+      </div>
+  `;
 }
 
-async function autoSaveValidation() {
-  if (!window.currentValidation || !currentUser) return;
-
-  try {
-    const token = localStorage.getItem("authToken");
-    const response = await fetch(`${API_BASE_URL}/validations`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(window.currentValidation),
-    });
-
-    if (response.ok) {
-      // Show subtle success message
-      showNotification("✓ Validation saved to your account", "success");
-      // Reload dashboard data
-      loadSavedValidations();
-    }
-  } catch (error) {
-    console.error("Auto-save error:", error);
-  }
-}
+// autoSaveValidation removed as per user request
 
 function showNotification(message, type = "info") {
   const notification = document.createElement("div");
@@ -535,6 +435,15 @@ function displayMetric(metricId, metricData) {
 
 function resetForm() {
   document.getElementById("validatorForm").reset();
+  
+  // Reset Wizard Logic
+  document.querySelector(".wizard-progress").style.display = "flex";
+  document.querySelector(".wizard-labels").style.display = "flex";
+  
+  // Show Step 1
+  currentStep = 1;
+  showStep(1);
+  
   document.getElementById("validatorForm").style.display = "block";
   document.getElementById("loadingState").style.display = "none";
   document.getElementById("resultsContainer").style.display = "none";
@@ -552,31 +461,7 @@ async function saveValidation() {
   savedValidations.push(window.currentValidation);
   localStorage.setItem("validations", JSON.stringify(savedValidations));
 
-  // If user is logged in, save to database
-  if (currentUser) {
-    try {
-      const token = localStorage.getItem("authToken");
-      const response = await fetch(`${API_BASE_URL}/validations`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(window.currentValidation),
-      });
-
-      if (response.ok) {
-        showNotification("✓ Validation saved to your account!", "success");
-      } else {
-        showNotification("Saved locally, server sync failed", "info");
-      }
-    } catch (error) {
-      console.error("Error saving to server:", error);
-      showNotification("Saved locally, server sync failed", "info");
-    }
-  } else {
-    showNotification("✓ Saved locally! Login to sync to your account.", "info");
-  }
+  showNotification("✓ Saved locally!", "info");
 
   loadSavedValidations();
 }
@@ -662,51 +547,7 @@ async function loadSavedValidations() {
     localValidations = [];
   }
 
-  // If user is logged in, fetch from server and merge
-  if (currentUser) {
-    try {
-      const token = localStorage.getItem("authToken");
-      const response = await fetch(`${API_BASE_URL}/validations`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Merge server validations with local ones
-        const serverValidations = data.validations.map((v) => ({
-          ideaName: v.ideaName,
-          ideaDescription: v.ideaDescription,
-          industry: v.industry,
-          targetMarket: v.targetMarket,
-          targetAudience: v.targetAudience,
-          problemSolved: v.problemSolved,
-          uniqueValue: v.uniqueValue,
-          estimatedBudget: v.estimatedBudget,
-          timeframe: v.timeframe,
-          competitors: v.competitors,
-          overallScore: v.overallScore,
-          metrics: v.metrics,
-          insights: v.insights,
-          audienceAnalysis: v.audienceAnalysis,
-          challenges: v.challenges,
-          recommendations: v.recommendations,
-          timestamp: v.createdAt || v.timestamp,
-          _id: v._id,
-        }));
-
-        // Use server validations as the source of truth
-        savedValidations = serverValidations;
-      }
-    } catch (error) {
-      console.error("Error loading validations from server:", error);
-      savedValidations = localValidations;
-    }
-  } else {
-    savedValidations = localValidations;
-  }
+  savedValidations = localValidations;
 
   if (savedValidations.length === 0) {
     container.innerHTML =
